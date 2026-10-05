@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "bun run --cwd packages/core-query build",
+    "test": "bun run --cwd packages/core-query test"
+  }
+}

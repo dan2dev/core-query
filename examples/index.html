@@ -1,0 +1,92 @@
+<style>
+  h2 { margin: 32px 0 8px; font-size: 20px; }
+  .examples { display: grid; gap: 12px; padding: 0; list-style: none; }
+  .examples li { padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+  .examples a { font-weight: 600; }
+  .examples p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+  pre { overflow-x: auto; padding: 12px; border-radius: 6px; background: var(--soft); }
+</style>
+<main>
+  <h1>core-query examples</h1>
+  <p class="sub">
+    Real use cases, one per page: open it, use it and read its source. Every page comes rendered by the server
+    (<code>ssr.mjs</code>); from there the browser routes between them without reloading (<code>app.mjs</code>,
+    <code>layout.html</code>).
+  </p>
+
+  <h2>The basics</h2>
+  <ul class="examples">
+    <li>
+      <a href="/first-components">Your first components</a>
+      <p>Step by step, for beginners: write HTML once and reuse it, give it data, a list of it, slots, its own memory, a little JavaScript, shared calculations.</p>
+    </li>
+    <li>
+      <a href="/todo">The to-do list of the 2017 thesis</a>
+      <p>The original app: not one line of JavaScript in the page; the list is posted to the server on every change.</p>
+    </li>
+    <li>
+      <a href="/components">Components</a>
+      <p>Tabs, a modal with <code>&lt;dialog&gt;</code>, notifications that animate in and out, a theme; a native accordion and popover.</p>
+    </li>
+    <li>
+      <a href="/signup">Sign-up form</a>
+      <p>Every kind of field (radio, checkboxes in an array, a multiple select, a range), errors once a field is left, a conditional field.</p>
+    </li>
+    <li>
+      <a href="/chat">Chat</a>
+      <p>Enter sends, <code>tick()</code> to scroll once the DOM is updated, an asynchronous answer from the bot.</p>
+    </li>
+  </ul>
+
+  <h2>Lists and data</h2>
+  <ul class="examples">
+    <li>
+      <a href="/todomvc">TodoMVC</a>
+      <p>A keyed list, the filter in the URL (<code>route.hash</code>), double-click editing (Enter saves, Esc cancels) in local state (<code>data-state-*</code>), localStorage.</p>
+    </li>
+    <li>
+      <a href="/users">Users table</a>
+      <p>Accent-insensitive search, sorting by column, bulk selection, an active row, deletion; keyed rows in a <code>&lt;table&gt;</code>.</p>
+    </li>
+    <li>
+      <a href="/kanban">Kanban</a>
+      <p>Nested keyed lists, drag and drop between columns, a draft per column in local state.</p>
+    </li>
+    <li>
+      <a href="/search">Async search</a>
+      <p>Your own asynchronous code: debounce, cancelling the previous request, loading / error / empty / results, "load more".</p>
+    </li>
+    <li>
+      <a href="/declarative">Declarative search</a>
+      <p>No JavaScript in the page: built-in functions, <code>.debounce</code> and <code>.outside</code>, a <code>get</code> request with loading / error, <code>data-state-*</code>, <code>data-transition</code>; the API and the first results come from <code>ssr.mjs</code>.</p>
+    </li>
+  </ul>
+
+  <h2>Whole applications</h2>
+  <ul class="examples">
+    <li>
+      <a href="/shop">Shop</a>
+      <p>Cards with <code>data-use</code> and slots, a cart with quantities, a coupon, shipping and totals; the cart is kept on the server.</p>
+    </li>
+    <li>
+      <a href="/invoice">Invoices</a>
+      <p>A document editor over nested state: the invoice picked from a list, keyed lines that move and duplicate, every amount a template function, undo / redo and saving kept by <code>app.on()</code>, a print view.</p>
+    </li>
+    <li>
+      <a href="/dashboard">Dashboard</a>
+      <p>Charts drawn by the templates inside <code>&lt;svg&gt;</code>: lines with a crosshair (pointer or keyboard), sparklines, bars; filters that scope everything, a view derived from the data by <code>app.on()</code>, live updates.</p>
+    </li>
+    <li>
+      <a href="/routes">Routes</a>
+      <p>The router at its smallest: a page per route (<code>routes/*.html</code>) inside a layout of its own (<code>routes/layout.html</code>), parameters and query, the active link, a 404; the next pages from their template (fetched once, preloaded while the browser is idle) and the state the server sends as JSON.</p>
+    </li>
+    <li>
+      <a href="/tracker">Issue tracker</a>
+      <p>A routed application on a server (<code>tracker/*</code>): filters, search and paging in the URL, an issue page with optimistic changes and comments, forms that post to a JSON API validated on the server, the server's 404 for what is not there.</p>
+    </li>
+  </ul>
+
+  <h2>How to run</h2>
+  <pre>pnpm build              # builds packages/core-query/dist
+node examples/ssr.mjs   # → http://localhost:3000</pre>
+</main>

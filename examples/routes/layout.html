@@ -1,0 +1,15 @@
+<!-- The routes example's part of each of its pages (ssr.mjs puts the page of the route in place of the comment below). -->
+<style>
+  .routes nav { display: flex; gap: 12px; margin-bottom: 16px; }
+  .routes nav .active { font-weight: bold; text-decoration: none; }
+</style>
+<main class="routes">
+  <nav>
+    <a href="/routes" data-class-active="route.name | eq('routes/home')">Home</a>
+    <a href="/routes/about" data-class-active="route.name | eq('routes/about')">About</a>
+    <a href="/routes/nothing">Broken link</a>
+    <a href="/">Examples</a>
+    <span>pages viewed: <b data-text="views"></b></span>
+  </nav>
+  <!-- page -->
+</main>

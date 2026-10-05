@@ -1,0 +1,76 @@
+<!-- The tracker's part of every tracker page (ssr.mjs puts the page of the route in place of the comment below): its
+     bar, a template the pages share and the styles of them all. -->
+<style>
+  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 24px; max-width: 760px; margin: 0 auto; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .bar .brand { color: inherit; font-weight: 700; text-decoration: none; }
+  .bar nav { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  .bar nav a { color: var(--muted); text-decoration: none; white-space: nowrap; }
+  .bar nav a.active { color: var(--fg); font-weight: 600; }
+  .count { padding: 0 7px; border-radius: 99px; background: var(--soft); font-size: 13px; font-weight: 600; }
+  .error { color: var(--danger); }
+  .link { padding: 0; border: 0; background: none; color: var(--accent); font-size: 14px; }
+  .fade-enter, .fade-leave { opacity: 0; }
+  /* These lists are replaced as a whole by another URL: what leaves must not linger (it is in the page until its
+     animations end, below the new items), so it goes at once and only the new ones fade in. */
+  .fade-leave { display: none; }
+
+  /* list.html */
+  .tools { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .tools input { flex: 1; min-width: 160px; }
+  .tabs { display: flex; gap: 4px; }
+  .tabs a, .pager a { padding: 4px 10px; border: 1px solid transparent; border-radius: 6px; color: var(--muted); text-decoration: none; }
+  .tabs a.active, .pager a.active { border-color: var(--line); background: var(--soft); color: var(--fg); font-weight: 600; }
+  .issues { margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 8px; list-style: none; }
+  .issues:empty { display: none; }
+  .issues li { padding: 10px 12px; border-bottom: 1px solid var(--line); transition: opacity 0.15s; }
+  .issues li:last-child { border-bottom: 0; }
+  .issues .title { color: inherit; font-weight: 600; text-decoration: none; }
+  .issues .title:hover { color: var(--accent); }
+  .issues .closed .title { color: var(--muted); text-decoration: line-through; }
+  .issues small { display: block; }
+  .label { margin-left: 4px; padding: 1px 8px; border: 1px solid var(--line); border-radius: 99px; font-size: 12px; }
+  .label[data-label='bug'] { border-color: var(--danger); color: var(--danger); }
+  .label[data-label='feature'] { border-color: var(--ok); color: var(--ok); }
+  .label[data-label='docs'] { border-color: var(--accent); color: var(--accent); }
+  .empty { padding: 24px; border: 1px solid var(--line); border-radius: 8px; color: var(--muted); text-align: center; }
+  .pager { display: flex; justify-content: center; gap: 4px; margin-top: 16px; }
+
+  /* issue.html */
+  .crumbs { display: flex; justify-content: space-between; margin: 0; }
+  .near { display: flex; gap: 12px; }
+  .issue header form { display: flex; gap: 8px; margin: 8px 0 4px; }
+  .issue header input { flex: 1; font-size: 20px; }
+  .issue h1 small { font-weight: 400; }
+  .status { padding: 2px 10px; border-radius: 99px; background: var(--ok); color: var(--bg); font-size: 14px; text-transform: capitalize; }
+  .status[data-status='closed'] { background: var(--muted); }
+  .columns { display: grid; grid-template-columns: 1fr 200px; gap: 24px; align-items: start; }
+  .columns aside { display: grid; gap: 12px; }
+  .columns aside select { width: 100%; }
+  .columns fieldset { display: grid; gap: 4px; margin: 0; padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; }
+  .body { white-space: pre-wrap; }
+  .comments { margin: 0 0 16px; padding: 0; list-style: none; }
+  .comments li { margin-bottom: 8px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; transition: opacity 0.2s; }
+  .comments p { margin: 4px 0 0; white-space: pre-wrap; }
+  .reply { display: grid; gap: 8px; justify-items: start; }
+  .reply textarea { width: 100%; }
+  @media (max-width: 640px) { .columns { grid-template-columns: 1fr; } }
+
+  /* new.html */
+  .new { display: grid; gap: 16px; }
+  .new > label, .new .pair > label { display: grid; gap: 4px; font-weight: 600; }
+  .new .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .new fieldset { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; }
+  .new legend { font-weight: 600; }
+</style>
+<header class="bar">
+  <a class="brand" href="/tracker">Tracker</a>
+  <nav>
+    <a href="/tracker" data-class-active="route.name | eq('tracker/list')">Issues <b class="count" data-text="counts.open"></b></a>
+    <a href="/tracker/new" data-class-active="route.name | eq('tracker/new')">New issue</a>
+    <a href="/">Examples</a>
+  </nav>
+</header>
+<!-- A block the pages share: a checkbox per label, kept in the array the element names with data-let-value;
+     its children (the legend) take the <slot>. -->
+<template id="labels"><slot></slot><label data-for="l in labels"><input type="checkbox" data-attr-value="l" data-value="value" /> <span data-text="l"></span></label></template>
+<main><!-- page --></main>

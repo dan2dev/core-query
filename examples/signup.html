@@ -1,0 +1,118 @@
+<style>
+  .form { display: grid; gap: 16px; }
+  .field { display: grid; gap: 4px; }
+  .field > span, legend { font-weight: 600; }
+  fieldset { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 0; padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .error { color: var(--danger); font-size: 14px; }
+  .error:empty { display: none; }
+  .strength { height: 6px; border-radius: 3px; background: var(--soft); }
+  .strength div { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.2s; }
+  .counter { justify-self: end; color: var(--muted); font-size: 14px; }
+  .counter.over { color: var(--danger); }
+  .actions { display: flex; gap: 8px; }
+  .success { padding: 16px; border: 1px solid var(--ok); border-radius: 8px; }
+  pre { overflow: auto; padding: 12px; border-radius: 6px; background: var(--soft); font-size: 13px; }
+  @media (max-width: 560px) { .pair { grid-template-columns: 1fr; } }
+</style>
+<main>
+  <a href="/">← examples</a>
+  <h1>Create an account</h1>
+  <p class="sub">
+    Every kind of field bound to one <code>form</code> object: text, number, radio, checkboxes in an array, a multiple select, a
+    range, a text area. Errors show once a field is left (the <code>#touched</code> state) and the button only enables when all is valid.
+  </p>
+
+  <form class="form" novalidate data-if="!sent" data-on-submit="sent.payload(form) #touched.set(null)">
+    <div class="pair">
+      <label class="field">
+        <span>Name</span>
+        <input autocomplete="name" data-value="form.name" data-on-focusout="#touched.name.set(true)" />
+        <small class="error" data-if="#touched.name" data-text="form.name | nameError"></small>
+      </label>
+      <label class="field">
+        <span>Email</span>
+        <input type="email" autocomplete="email" data-value="form.email" data-on-focusout="#touched.email.set(true)" />
+        <small class="error" data-if="#touched.email" data-text="form.email | emailError"></small>
+      </label>
+    </div>
+    <div class="pair">
+      <label class="field">
+        <span>Password</span>
+        <input type="password" autocomplete="new-password" data-value="form.password" data-on-focusout="#touched.password.set(true)" />
+        <div class="strength" title="Password strength"><div data-style-width="form.password | strength"></div></div>
+        <small class="error" data-if="#touched.password" data-text="form.password | passwordError"></small>
+      </label>
+      <label class="field">
+        <span>Confirm the password</span>
+        <input type="password" autocomplete="new-password" data-value="form.confirm" data-on-focusout="#touched.confirm.set(true)" />
+        <small class="error" data-if="#touched.confirm" data-text="form | confirmError"></small>
+      </label>
+    </div>
+    <div class="pair">
+      <label class="field">
+        <span>Age</span>
+        <input type="number" min="0" data-value="form.age" data-on-focusout="#touched.age.set(true)" />
+        <small class="error" data-if="#touched.age" data-text="form.age | ageError"></small>
+      </label>
+      <label class="field">
+        <span>Country</span>
+        <select data-value="form.country">
+          <option value="">Choose…</option>
+          <option data-for="c in options.countries" data-attr-value="c.code" data-text="c.name"></option>
+        </select>
+      </label>
+    </div>
+    <fieldset>
+      <legend>Plan</legend>
+      <label data-for="p in options.plans">
+        <input type="radio" name="plan" data-attr-value="p.id" data-value="form.plan" />
+        <span data-text="p.name"></span> <small class="muted" data-text="p.price"></small>
+      </label>
+    </fieldset>
+    <!-- Only the business plan asks for it: the field comes and goes with the plan, and `payload` leaves its value out for the others. -->
+    <label class="field" data-if="form.plan | eq('business')">
+      <span>Company tax ID (EIN)</span>
+      <input inputmode="numeric" placeholder="00-0000000" data-value="form.taxId" data-on-focusout="#touched.taxId.set(true)" />
+      <small class="error" data-if="#touched.taxId" data-text="form | taxIdError"></small>
+    </label>
+    <fieldset>
+      <legend>Interests</legend>
+      <label data-for="i in options.interests"><input type="checkbox" data-attr-value="i" data-value="form.interests" /> <span data-text="i"></span></label>
+    </fieldset>
+    <div class="pair">
+      <label class="field">
+        <span>Languages <small class="muted">(Ctrl/⌘ for several)</small></span>
+        <select multiple size="4" data-value="form.languages">
+          <option data-for="l in options.languages" data-text="l"></option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Emails per week: <b data-text="form.frequency"></b></span>
+        <input type="range" min="0" max="7" data-value="form.frequency" />
+        <small class="muted" data-text="form.frequency | frequency"></small>
+      </label>
+    </div>
+    <label class="field">
+      <span>Bio</span>
+      <textarea rows="3" data-value="form.bio"></textarea>
+      <small class="counter" data-class-over="form.bio | over(160)" data-text="form.bio | left(160)"></small>
+    </label>
+    <label><input type="checkbox" data-value="form.terms" /> I have read and accept the terms of use</label>
+    <div class="actions">
+      <button class="primary" data-attr-disabled="form | invalid">Create account</button>
+      <button type="button" data-click="form.blank() #touched.set(null)">Clear</button>
+    </div>
+  </form>
+  <section class="success" data-else>
+    <h2>Account created!</h2>
+    <p>This is what would be sent to the server:</p>
+    <pre data-text="sent | json"></pre>
+    <button data-click="sent.set(null) form.blank()">Sign up again</button>
+  </section>
+
+  <details>
+    <summary>The form's state, live</summary>
+    <pre data-text="form | json"></pre>
+  </details>
+</main>

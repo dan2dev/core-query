@@ -1,0 +1,18 @@
+<h1>New issue</h1>
+<!-- .create() posts the draft and goes to the page of the issue the server answers with (see layout.html). -->
+<form class="new" data-context="draft" data-on-submit=".create()">
+  <label>Title <input required maxlength="120" data-component="focus" data-value=".title" /></label>
+  <label>Description <textarea rows="6" maxlength="5000" data-value=".body"></textarea></label>
+  <div class="pair">
+    <label>
+      Assignee
+      <select data-value=".assignee">
+        <option value="">Nobody</option>
+        <option data-for="p in people" data-text="p"></option>
+      </select>
+    </label>
+    <fieldset data-use="labels" data-let-value=".labels"><legend>Labels</legend></fieldset>
+  </div>
+  <p class="error" data-if="#draft.error">Not created (<span data-text="#draft.error.message"></span>).</p>
+  <p><button class="primary" data-attr-disabled="#draft.loading">Create issue</button> <a href="/tracker">Cancel</a></p>
+</form>

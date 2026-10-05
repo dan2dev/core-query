@@ -1,0 +1,318 @@
+<style>
+  /* Each step: its text, the code (HTML, then JavaScript), and the result last (order). */
+  section { display: flex; flex-direction: column; gap: 8px; margin: 40px 0; }
+  section > h2 { margin: 0; font-size: 20px; }
+  section > p { margin: 0; }
+  .demo { order: 1; padding: 16px; border: 1px dashed var(--line); border-radius: 8px; }
+  .demo::before { content: 'Result'; display: block; margin-bottom: 8px; color: var(--muted); font-size: 13px; }
+  .tip { order: 2; margin: 0; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--soft); }
+  pre { overflow-x: auto; margin: 0; padding: 12px; border-radius: 6px; background: var(--soft); font-size: 14px; }
+  pre[data-lang]::before { content: attr(data-lang); display: block; color: var(--muted); font: 13px system-ui, sans-serif; }
+  table { width: 100%; border-collapse: collapse; }
+  td, th { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  ol.mistakes li { margin-bottom: 6px; }
+
+  /* What the components below look like. */
+  .hello { margin: 4px 0; }
+  .card { display: flex; gap: 12px; align-items: baseline; margin: 4px 0; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; }
+  .card .muted { margin-left: auto; }
+  .box { margin: 8px 0; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; }
+  .box h3 { margin: 0 0 4px; font-size: 16px; }
+  .box p { margin: 0; }
+  .stepper { display: inline-flex; gap: 8px; align-items: center; }
+  .stepper b { min-width: 1.5em; text-align: center; }
+  .question button { width: 100%; text-align: left; }
+  .question p { margin: 4px 12px 12px; }
+  dialog { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); }
+  dialog::backdrop { background: rgb(0 0 0 / 0.4); }
+</style>
+<main>
+  <a href="/">← examples</a>
+  <h1>Your first components</h1>
+  <p class="sub">
+    A component is a piece of HTML you write once and use many times. In core-query it is plain HTML: a
+    <code>&lt;template&gt;</code> and a few <code>data-*</code> attributes. You need no build step and no class. This page builds
+    components one small step at a time. Each step shows its code first and the result below it, so you can try it right there.
+  </p>
+  <p>
+    <b>On your own page</b>, load core-query once, in the <code>&lt;head&gt;</code>:
+    <code>&lt;script src="https://unpkg.com/core-query"&gt;&lt;/script&gt;</code>. It starts by itself once the page has loaded.
+    Paste a step's HTML into your <code>&lt;body&gt;</code> and its JavaScript into a <code>&lt;script&gt;</code> placed after
+    that tag. Some steps reuse a template from an earlier step: copy that template too. (This page runs the same JavaScript
+    from <code>first-components.mjs</code>, and comes rendered by the server with that data.)
+  </p>
+
+  <table>
+    <tr><th>I want to…</th><th>Use</th></tr>
+    <tr><td>reuse a piece of HTML</td><td><code>&lt;template id="x"&gt;</code> + <code>data-use="x"</code></td></tr>
+    <tr><td>give it data</td><td><code>CoreQuery.set('ana', {…})</code> + <code>data-let-user="ana"</code></td></tr>
+    <tr><td>show one per item of a list</td><td><code>data-for="person in people"</code> on the same element</td></tr>
+    <tr><td>put my own content inside it</td><td><code>&lt;slot&gt;</code></td></tr>
+    <tr><td>give it its own memory</td><td><code>data-state-ui</code></td></tr>
+    <tr><td>run JavaScript for it</td><td><code>data-component="x"</code> + <code>CoreQuery.component('x', …)</code></td></tr>
+    <tr><td>share a calculation</td><td><code>CoreQuery.fn(…)</code></td></tr>
+  </table>
+
+  <section>
+    <h2>1. Write it once, use it many times</h2>
+    <p>
+      Put the HTML in a <code>&lt;template id="…"&gt;</code>: the browser does not show it. Then every element with
+      <code>data-use="hello"</code> gets a copy of it.
+    </p>
+    <div class="demo" data-code>
+      <template id="hello">
+        <p class="hello">👋 Hello! I am a component.</p>
+      </template>
+
+      <div data-use="hello"></div>
+      <div data-use="hello"></div>
+      <div data-use="hello"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. Give it data</h2>
+    <p>
+      The same card, two people. The data lives in JavaScript: <code>CoreQuery.set('ana', {…})</code> (below) stores an object
+      under the name <code>ana</code>, and a dotted name like <code>ana.name</code> is a <em>path</em> to a value inside it.
+      <code>data-let-user="ana"</code> means: <em>inside this card, <code>user</code> is <code>ana</code></em>, so
+      <code>user.name</code> reads <code>ana.name</code>. The template only knows <code>user</code>, so it works for anyone.
+      Try it: open the browser console and run <code>CoreQuery.set('ana.name', 'Ann')</code>. The first card changes.
+    </p>
+    <div class="demo" data-code>
+      <template id="user-card">
+        <article class="card">
+          <b data-text="user.name"></b>
+          <span class="muted" data-text="user.job"></span>
+        </article>
+      </template>
+
+      <div data-use="user-card" data-let-user="ana"></div>
+      <div data-use="user-card" data-let-user="bia"></div>
+    </div>
+    <pre data-lang="JavaScript">// The data of the page. Templates read it by path: "ana.name" is "Ana".
+CoreQuery.set('ana', { name: 'Ana', job: 'Designer' })
+CoreQuery.set('bia', { name: 'Bia', job: 'Developer' })</pre>
+  </section>
+
+  <section>
+    <h2>3. One per item of a list</h2>
+    <p>
+      Add <code>data-for</code> to the same element (it reuses the <code>user-card</code> template from step 2): one card per
+      person. <code>person in people</code> names each item <code>person</code>, and <code>data-let-user="person"</code> hands it to
+      the card as <code>user</code>. Click the button: the list grows, and a new card appears by itself.
+    </p>
+    <div class="demo" data-code>
+      <div data-for="person in people" data-use="user-card" data-let-user="person"></div>
+
+      <button data-click="people.push(newcomer)">Add Caio</button>
+    </div>
+    <pre data-lang="JavaScript">CoreQuery.set('people', [
+  { name: 'Ana', job: 'Designer' },
+  { name: 'Bia', job: 'Developer' },
+])
+CoreQuery.set('newcomer', { name: 'Caio', job: 'New here' })</pre>
+  </section>
+
+  <section>
+    <h2>4. Put your own content inside</h2>
+    <p>
+      A <code>&lt;slot&gt;</code> in the template is a hole for what you write between the tags. A named slot,
+      <code>&lt;slot name="title"&gt;</code>, takes the child with <code>slot="title"</code>. What is inside a slot shows when you
+      give it nothing.
+    </p>
+    <div class="demo" data-code>
+      <template id="box">
+        <div class="box">
+          <h3><slot name="title">Untitled</slot></h3>
+          <slot></slot>
+        </div>
+      </template>
+
+      <div data-use="box">
+        <span slot="title">Shopping list</span>
+        <p>Bread, milk and coffee.</p>
+      </div>
+      <div data-use="box">
+        <p>No title here, so the box shows its own.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>5. Let it change the data</h2>
+    <p>
+      A stepper with − and + buttons. It does not know about apples: it changes whatever <code>value</code> points to, and
+      stops at <code>max</code>. Click the buttons: the total below follows. New here: <code>value.add(1)</code> adds 1 to
+      <code>value</code>; <code>|</code> passes a value to a function, so <code>value | gte(max)</code> is true when
+      <code>value</code> ≥ <code>max</code>; and <code>data-attr-disabled</code> disables the button while that is true.
+    </p>
+    <div class="demo" data-code>
+      <template id="stepper">
+        <span class="stepper">
+          <button data-click="value.add(-1)" data-attr-disabled="value | lte(0)">−</button>
+          <b data-text="value"></b>
+          <button data-click="value.add(1)" data-attr-disabled="value | gte(max)">+</button>
+        </span>
+      </template>
+
+      <p>Apples: <span data-use="stepper" data-let-value="order.apples" data-let-max="stock.apples"></span></p>
+      <p>Pears: <span data-use="stepper" data-let-value="order.pears" data-let-max="stock.pears"></span></p>
+      <p>You are buying <b data-text="order.apples | add(order.pears)"></b> fruits.</p>
+    </div>
+    <pre data-lang="JavaScript">CoreQuery.set('order', { apples: 1, pears: 0 })
+CoreQuery.set('stock', { apples: 5, pears: 3 })</pre>
+  </section>
+
+  <section>
+    <h2>6. Give it its own memory</h2>
+    <p>
+      Some things only matter to the component, like "is this answer open?". <code>data-state-ui</code> gives every copy its
+      own <code>ui</code>, starting empty: here, each item of the list. Open one answer: the others stay closed.
+    </p>
+    <div class="demo" data-code>
+      <template id="question">
+        <div class="question">
+          <button data-click="ui.open.not()" data-text="q.title"></button>
+          <p data-show="ui.open" data-text="q.answer"></p>
+        </div>
+      </template>
+
+      <div data-for="item in faq" data-use="question" data-let-q="item" data-state-ui></div>
+    </div>
+    <pre data-lang="JavaScript">CoreQuery.set('faq', [
+  { title: 'Do I need a build step?', answer: 'No: one script tag is enough.' },
+  { title: 'Is it still HTML?', answer: 'Yes: a template and data-* attributes.' },
+])</pre>
+    <p class="tip">
+      Two copies side by side, outside a list, would share one <code>ui</code>. Give each its own name and point
+      <code>ui</code> at it: <code>data-state-first data-let-ui="first"</code>, <code>data-state-second data-let-ui="second"</code>.
+    </p>
+  </section>
+
+  <section>
+    <h2>7. Add some JavaScript</h2>
+    <p>
+      For what HTML cannot do alone, write a function with <code>CoreQuery.component('clock', …)</code> and put
+      <code>data-component="clock"</code> on an element. The function gets the element and runs when the element appears; the
+      function it returns runs when the element goes away. Here <code>data-value</code> ties the checkbox to
+      <code>showClock</code> (true or false), and <code>data-if</code> keeps the paragraph only while it is true. Uncheck the box:
+      the clock is removed and its timer stops.
+    </p>
+    <div class="demo" data-code>
+      <label><input type="checkbox" data-value="showClock"> Show the clock</label>
+      <p data-if="showClock">It is <time data-component="clock"></time>.</p>
+    </div>
+    <pre data-lang="JavaScript">CoreQuery.component('clock', (el) => {
+  const show = () => (el.textContent = new Date().toLocaleTimeString())
+  show()
+  const timer = setInterval(show, 1000)
+  return () => clearInterval(timer) // the element left the page
+})
+CoreQuery.set('showClock', true)</pre>
+  </section>
+
+  <section>
+    <h2>8. Connect JavaScript to the data</h2>
+    <p>
+      A modal <code>&lt;dialog&gt;</code> (dark backdrop, Esc closes it) opens only from JavaScript, with
+      <code>el.showModal()</code>, so a component opens and closes it to match the data. On a component,
+      <code>data-value="modal"</code> tells the function where its data is: it gets the element, that path (<code>"modal"</code>)
+      and the app. <code>app.on(path, fn, { now: true })</code> calls <code>fn</code> with the value right away, then again each
+      time it changes. Click the button, then close the dialog with its button or Esc.
+    </p>
+    <div class="demo" data-code>
+      <button data-click="modal.set(true)">Open the dialog</button>
+
+      <dialog data-component="dialog" data-value="modal" data-on-close="modal.set(false)">
+        <p>I open and close when <b>modal</b> changes. Esc works too.</p>
+        <button data-click="modal.set(false)">Close</button>
+      </dialog>
+    </div>
+    <pre data-lang="JavaScript">CoreQuery.component('dialog', (el, path, app) =>
+  // app.on returns its own cleanup: return it, and it stops listening when the dialog goes away.
+  app.on(path, (open) => (open ? el.open || el.showModal() : el.close()), { now: true }),
+)
+CoreQuery.set('modal', false)</pre>
+  </section>
+
+  <section>
+    <h2>9. Share calculations, and put components inside components</h2>
+    <p>
+      Templates have no <code>+</code> or <code>*</code>: a calculation is a function, built in like <code>add</code> (step 5)
+      or your own, named with <code>CoreQuery.fn</code>, then used with <code>|</code>. Here every product card uses the stepper from step 5, and the total uses two functions.
+    </p>
+    <div class="demo" data-code>
+      <template id="product">
+        <article class="card">
+          <b data-text="product.name"></b>
+          <span data-text="product.price | money"></span>
+          <span data-use="stepper" data-let-value="product.qty" data-let-max="product.stock"></span>
+        </article>
+      </template>
+
+      <div data-for="item in products" data-use="product" data-let-product="item"></div>
+      <p>Total: <b data-text="products | total | money"></b></p>
+    </div>
+    <pre data-lang="JavaScript">CoreQuery.fn({
+  money: (n) => '$' + n.toFixed(2),
+  total: (products) => products.reduce((sum, p) => sum + p.price * p.qty, 0),
+})
+CoreQuery.set('products', [
+  { name: 'Coffee', price: 4.5, qty: 1, stock: 9 },
+  { name: 'Bread', price: 2.25, qty: 2, stock: 4 },
+])</pre>
+  </section>
+
+  <section>
+    <h2>With TypeScript</h2>
+    <p>
+      Optional: skip this while you use the script tag. If you install core-query with npm and a bundler, you create the app
+      yourself and call <code>app.mount()</code> (the script tag does both for you), and TypeScript checks your components. The
+      types come from your data, with no annotations:
+    </p>
+    <pre data-lang="TypeScript">import { createApp, type Component } from 'core-query'
+
+const app = createApp({ modal: false, order: { apples: 1, pears: 0 } })
+
+// Annotate el and path to narrow them: open is a boolean.
+app.component('dialog', (el: HTMLDialogElement, path: 'modal', a) =&gt;
+  a.on(path, (open) =&gt; (open ? el.open || el.showModal() : el.close()), { now: true }),
+)
+app.mount() // binds &lt;body&gt;: after registering components and functions
+
+// A component for any app that has { volume: number }.
+export const volume: Component&lt;{ volume: number }&gt; = (el, path: 'volume', a) =&gt;
+  a.on(path, (v) =&gt; (el.title = v + '%'))
+
+app.set('order.apples', 2)
+app.set('modal', 'yes') // error: a string is not a boolean
+app.get('order.apple') // error: the paths there are 'order.apples' and 'order.pears'</pre>
+  </section>
+
+  <section>
+    <h2>Common mistakes</h2>
+    <ol class="mistakes">
+      <li>
+        <b>The page stops working.</b> The console says <code>CoreQuery: no &lt;template id="…"&gt;</code>: the
+        <code>&lt;template id&gt;</code> must be in the page, outside any <code>data-if</code>, <code>data-for</code> or other
+        template, and the id must match <code>data-use</code> exactly.
+      </li>
+      <li>
+        <b>Mixed-case names.</b> HTML makes attribute names lowercase: <code>data-let-userName</code> is the name
+        <code>username</code>. Use lowercase names.
+      </li>
+      <li>
+        <b><code>data-let</code> takes a path, not a calculation.</b> <code>data-let-x="price | money"</code> is an error: pass
+        the path (<code>data-let-x="price"</code>) and use <code>| money</code> inside the template.
+      </li>
+      <li>
+        <b>The JavaScript does nothing.</b> Call <code>CoreQuery.component</code> and <code>CoreQuery.fn</code> in a plain
+        <code>&lt;script&gt;</code> placed after the core-query script tag, as here, so they run before core-query starts.
+        "CoreQuery is not defined" in the console means your script runs before that tag. A <code>data-component</code> name with
+        no <code>CoreQuery.component</code> is only a warning in the console; a function with no <code>CoreQuery.fn</code>
+        (<code>CoreQuery: unknown function "money"</code>) stops the page.
+      </li>
+    </ol>
+  </section>
+</main>

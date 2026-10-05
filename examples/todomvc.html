@@ -1,0 +1,69 @@
+<style>
+  .app { border: 1px solid var(--line); border-radius: 8px; }
+  .app header { display: flex; align-items: center; gap: 10px; padding: 6px 12px; border-bottom: 1px solid var(--line); }
+  .app header form { flex: 1; }
+  .app .new-todo { width: 100%; border: 0 !important; padding: 8px 0 !important; font-size: 20px; }
+  .todo-list { margin: 0; padding: 0; list-style: none; }
+  .todo-list li { border-bottom: 1px solid var(--line); }
+  .view { display: flex; align-items: center; gap: 12px; padding: 10px 12px; }
+  .view label { flex: 1; overflow-wrap: anywhere; }
+  .done label { color: var(--muted); text-decoration: line-through; }
+  .editing .view { display: none; }
+  .edit { width: 100%; padding: 10px 12px !important; border-radius: 0 !important; font-size: 18px; }
+  .destroy { visibility: hidden; padding: 0 6px; border: 0; background: none; color: var(--danger); font-size: 20px; }
+  li:hover .destroy, .destroy:focus-visible { visibility: visible; }
+  .app footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; color: var(--muted); font-size: 14px; }
+  .filters a { padding: 2px 8px; border: 1px solid transparent; border-radius: 4px; color: inherit; text-decoration: none; }
+  .filters a.selected { border-color: var(--line); }
+</style>
+<main>
+  <a href="/">← examples</a>
+  <h1>todos</h1>
+  <p class="sub">
+    TodoMVC: a list with <code>data-key</code>, the filter in the URL (<code>#/active</code>, read from <code>route.hash</code>) and
+    double-click editing in local state (<code>data-state-edit</code>, which never reaches localStorage): Enter saves, Esc cancels.
+  </p>
+  <section class="app" data-component="todos">
+    <header>
+      <input type="checkbox" title="Mark all as done" data-if="todos.length" data-prop-checked="todos | allDone" data-on-change="todos.toggleAll($event.target.checked)" />
+      <form data-on-submit="todos.create(draft) draft.set('')">
+        <input class="new-todo" placeholder="What needs to be done?" autofocus data-value="draft" />
+      </form>
+    </header>
+    <ul class="todo-list">
+      <!-- Each item has its own edit state at t.#edit, read here as "edit". -->
+      <li
+        data-for="t in todos"
+        data-key="t.id"
+        data-if="t | visible(route.hash)"
+        data-state-edit='{"on": false, "text": ""}'
+        data-class-done="t.done"
+        data-class-editing="edit.on"
+      >
+        <div class="view" data-on-dblclick="edit.text.set(t.title) edit.on.set(true)">
+          <input type="checkbox" data-value="t.done" />
+          <label data-text="t.title"></label>
+          <button class="destroy" title="Delete" data-click="t.delete()">×</button>
+        </div>
+        <input
+          class="edit"
+          data-if="edit.on"
+          data-component="focus"
+          data-value="edit.text"
+          data-on-keydown.enter="t.rename(edit) edit.on.set(false) todos.dropEmpty()"
+          data-on-keydown.escape="edit.on.set(false)"
+          data-on-blur="t.rename(edit) edit.on.set(false) todos.dropEmpty()"
+        />
+      </li>
+    </ul>
+    <footer data-if="todos.length">
+      <span data-text="todos | left"></span>
+      <nav class="filters">
+        <a href="#/" data-class-selected="route.hash | filter | eq('all')">All</a>
+        <a href="#/active" data-class-selected="route.hash | filter | eq('active')">Active</a>
+        <a href="#/completed" data-class-selected="route.hash | filter | eq('completed')">Completed</a>
+      </nav>
+      <button data-if="todos | someDone" data-click="todos.clearDone()">Clear completed</button>
+    </footer>
+  </section>
+</main>

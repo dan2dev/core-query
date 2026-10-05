@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-text="title"></title>
+    <!-- Every page of the examples, served by ssr.mjs: this layout around the page of the URL (app.mjs). -->
+    <link rel="stylesheet" href="/examples/base.css" />
+    <script src="/packages/core-query/dist/core-query.global.js"></script>
+    <script type="module">
+      import { modules, routes } from '/examples/app.mjs'
+      const app = CoreQuery
+      // Each page brings its own functions and components, and two pages may give one name to different things (money,
+      // count): each name calls the one of the page showing. The router sets `route` before it binds a page.
+      const page = () => modules[app.get('route.name')]
+      for (const m of new Set(Object.values(modules))) {
+        for (const name in m.fns) app.fn(name, (...a) => page().fns[name](...a))
+        for (const name in m.components) app.component(name, (...a) => page().components[name](...a))
+      }
+      // A page's template is fetched once (ahead of the click, when the browser is idle) and rendered here; a link
+      // only asks the server for the state of its URL, without reloading.
+      app.router(routes, { pages: (name) => '/page/' + name })
+      // <head> is outside the mounted <body>: the server renders the title, from here on it follows the state.
+      app.on('title', (t) => (document.title = t))
+    </script>
+  </head>
+  <body>
+    <!-- The page of the URL: the server renders it here on a visit, the router on a navigation. -->
+    <div data-page><!-- page --></div>
+  </body>
+</html>

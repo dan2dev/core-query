@@ -234,3 +234,11 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+
+# build output
+dist/
+# workspace packages (the NuGet rule above ignores them)
+!/packages/*
+
+# test coverage report
+coverage/

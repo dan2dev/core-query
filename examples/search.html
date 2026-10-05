@@ -1,0 +1,45 @@
+<style>
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-bottom: 16px; }
+  .toolbar input[type='search'] { flex: 1 1 100%; font-size: 18px; }
+  .status { padding: 16px; border-radius: 8px; background: var(--soft); }
+  .status.error { color: var(--danger); }
+  .loading::before { content: ''; display: inline-block; width: 12px; height: 12px; margin-right: 8px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .results { margin: 0; padding: 0; list-style: none; }
+  .results li { display: flex; align-items: baseline; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .results li b { flex: 1; }
+  .more { margin-top: 12px; }
+</style>
+<main data-component="search">
+  <a href="/">← examples</a>
+  <h1>City search</h1>
+  <p class="sub">
+    An asynchronous API of your own (simulated here, with a latency and a failure you control): waits 300 ms after the last key,
+    cancels the previous search (<code>AbortController</code>), shows loading / error / empty / results with <code>data-if</code> and
+    pages with "load more". A URL with <code>?q=rio</code> comes with its first page rendered by the server.
+    <a href="/declarative">The declarative search</a> does the same against a real endpoint with no JavaScript.
+  </p>
+  <div class="toolbar">
+    <input type="search" placeholder="Type a city (e.g. são, rio, porto)…" autofocus data-value="q" data-on-keydown.escape="q.set('')" />
+    <label>Latency <input type="range" min="0" max="2000" step="100" data-value="latency" /> <span data-text="latency"></span> ms</label>
+    <label><input type="checkbox" data-value="fail" /> simulate a server failure</label>
+  </div>
+
+  <p class="status loading" data-if="status | eq('loading')">Searching for "<span data-text="q"></span>"…</p>
+  <p class="status error" data-else-if="status | eq('error')">
+    Failed: <span data-text="error"></span>. <button data-click="retries.add(1)">Try again</button>
+  </p>
+  <p class="status muted" data-else-if="q | blank">Type something to search.</p>
+  <p class="status muted" data-else-if="!results.length">No city found for "<span data-text="q"></span>".</p>
+  <div data-else>
+    <p class="muted" data-text="total | found"></p>
+    <ul class="results">
+      <li data-for="c in results" data-key="c.name">
+        <b data-text="c.name"></b> <span class="muted" data-text="c.state"></span> <span data-text="c.pop | people"></span>
+      </li>
+    </ul>
+    <button class="more" data-if="results | hasMore(total)" data-attr-disabled="loadingMore" data-click="page.add(1)">
+      <span data-if="loadingMore">Loading…</span><span data-else>Load more</span>
+    </button>
+  </div>
+</main>

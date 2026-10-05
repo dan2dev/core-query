@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ssr-example",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "examples/ssr.mjs"
+      ],
+      "port": 3000,
+      "autoPort": true
+    }
+  ]
+}

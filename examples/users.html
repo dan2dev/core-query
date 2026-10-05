@@ -1,0 +1,65 @@
+<style>
+  main { max-width: 960px; }
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .toolbar input { flex: 1; min-width: 220px; }
+  .table { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 8px 12px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+  th { background: var(--soft); font-size: 14px; }
+  .sort { padding: 0; border: 0; background: none; font-weight: 600; }
+  .check { width: 1%; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: var(--soft); }
+  tr.current { box-shadow: inset 3px 0 var(--accent); background: var(--soft); }
+  tr.inactive td:not(.check) { color: var(--muted); }
+  .empty { padding: 24px; color: var(--muted); text-align: center; cursor: default; }
+  .detail { margin-top: 16px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+  .detail h2 { margin: 0; font-size: 18px; }
+</style>
+<main>
+  <a href="/">← examples</a>
+  <h1>Users</h1>
+  <p class="sub">
+    Accent-insensitive search, sorting by column, bulk selection (checkboxes in an array), an active row and deletion, in a table
+    with <code>data-key</code>: sorting moves the rows instead of rewriting them.
+  </p>
+  <div class="toolbar">
+    <input type="search" placeholder="Search by name, email or team (Esc clears)" data-value="q" data-on-keydown.escape="q.set('')" />
+    <span class="muted" data-text="users | count(q)"></span>
+    <button class="danger" data-if="selected.length" data-click="users.withoutIds(selected) selected.splice(0)">
+      Delete <span data-text="selected.length"></span> selected
+    </button>
+  </div>
+  <div class="table">
+    <table>
+      <thead>
+        <tr>
+          <th class="check">
+            <input type="checkbox" title="Select the visible ones" data-prop-checked="users | allChecked(q, selected)" data-on-change="selected.checkVisible(users, q, $event.target.checked)" />
+          </th>
+          <th><button class="sort" data-click="order.by('name') users.sort(order)">Name <span data-text="order | arrow('name')"></span></button></th>
+          <th><button class="sort" data-click="order.by('email') users.sort(order)">Email <span data-text="order | arrow('email')"></span></button></th>
+          <th><button class="sort" data-click="order.by('team') users.sort(order)">Team <span data-text="order | arrow('team')"></span></button></th>
+          <th>Active</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-for="u in users" data-key="u.id" data-if="u | matches(q)" data-class-current="u.id | eq(current.id)" data-class-inactive="!u.active" data-click="current.set(u)">
+          <td class="check"><input type="checkbox" data-attr-value="u.id" data-value="selected" data-click.stop="" /></td>
+          <td data-text="u.name"></td>
+          <td data-text="u.email"></td>
+          <td data-text="u.team"></td>
+          <td><input type="checkbox" title="Active" data-value="u.active" data-click.stop="" /></td>
+        </tr>
+        <tr data-if="users | none(q)">
+          <td class="empty" colspan="5">No users found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <aside class="detail" data-if="current" data-context="current">
+    <h2 data-text=".name"></h2>
+    <p><span data-text=".email"></span> · <span data-text=".team"></span></p>
+    <button data-click="current.set(null)">Close</button>
+  </aside>
+</main>

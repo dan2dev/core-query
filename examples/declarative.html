@@ -1,0 +1,76 @@
+<style>
+  .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .toolbar input { flex: 1; font-size: 18px; }
+  .menu { position: relative; white-space: nowrap; }
+  .menu ul { position: absolute; right: 0; z-index: 1; min-width: 100%; margin: 4px 0 0; padding: 4px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); list-style: none; transition: opacity 0.15s, transform 0.15s; }
+  .menu li button { width: 100%; border: 0; background: none; text-align: left; white-space: nowrap; }
+  .menu li button.active { color: var(--accent); font-weight: 600; }
+  /* data-transition="drop": where the menu enters from and leaves to. */
+  .drop-enter, .drop-leave { opacity: 0; transform: translateY(-6px); }
+  .status { padding: 16px; border-radius: 8px; background: var(--soft); }
+  .status.error { color: var(--danger); }
+  .results { margin: 0; padding: 0; list-style: none; }
+  .results li { display: flex; align-items: baseline; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .results li b { flex: 1; }
+  .results li.big b::after { content: ' ★'; color: var(--accent); }
+</style>
+<main>
+  <a href="/">← examples</a>
+  <h1>Declarative search</h1>
+  <p class="sub">
+    A city search against a real API (<code>/api/cities</code>, in <code>ssr.mjs</code>, which renders the first results too) with not one line of JavaScript nor a
+    registered function: a declarative request that waits 300 ms, loading and error at <code>#cities</code>, a menu with local
+    state, built-in functions. Type <code>error</code> to make the server fail.
+  </p>
+  <div class="toolbar">
+    <!-- q changes on every key; the request only leaves 300 ms after the last one. A new one aborts the one before. -->
+    <input
+      type="search"
+      placeholder="Type a city (e.g. são, porto)…"
+      autofocus
+      data-value="q"
+      data-on-input.debounce.300="cities.get('/api/cities?q=', q, '&amp;state=', state) searches.add(1)"
+    />
+    <!-- The menu's state lives at #menu, out of what would be sent to a server; "menu" is its alias in here. -->
+    <div
+      class="menu"
+      data-state-menu='{"open": false, "states": ["", "SP", "RJ", "MG", "BA"]}'
+      data-click.outside="menu.open.set(false)"
+      data-on-keydown.escape.window="menu.open.set(false)"
+    >
+      <button type="button" data-click="menu.open.not()" data-attr-aria-expanded="menu.open | then('true', 'false')">
+        State: <b data-text="state | or('all')"></b> ▾
+      </button>
+      <ul data-if="menu.open" data-transition="drop">
+        <li data-for="s in menu.states">
+          <button
+            type="button"
+            data-text="s | or('All')"
+            data-class-active="s | eq(state)"
+            data-click="state.set(s) menu.open.set(false) cities.get('/api/cities?q=', q, '&amp;state=', state) searches.add(1)"
+          ></button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="status muted" data-if="#cities.loading">Searching…</p>
+  <p class="status error" data-else-if="#cities.error">
+    Failed: <span data-text="#cities.error.status"></span> <span data-text="#cities.error.message"></span>.
+    <button type="button" data-click="cities.get('/api/cities?q=', q, '&amp;state=', state) searches.add(1)">Try again</button>
+  </p>
+  <p class="status muted" data-else-if="!cities.length">No city found.</p>
+  <div data-else>
+    <p class="muted">
+      <span data-text="cities.length"></span>
+      <span data-text="cities.length | eq(1) | then('city found', 'cities found')"></span> (★ over 1 million people)
+    </p>
+    <ul class="results">
+      <li data-for="c in cities" data-key="c.name" data-class-big="c.pop | gt(1000000)">
+        <b data-text="c.name"></b> <span class="muted" data-text="c.state"></span> <span>pop. <span data-text="c.people"></span></span>
+      </li>
+    </ul>
+  </div>
+  <!-- searches.add(1) comes after the request: it only runs when that one ends well. -->
+  <p class="muted">Searches completed: <span data-text="searches"></span></p>
+</main>

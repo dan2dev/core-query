@@ -1,0 +1,46 @@
+<style>
+  main { max-width: 1080px; }
+  .board { display: grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap: 16px; overflow-x: auto; }
+  .column { display: flex; flex-direction: column; gap: 8px; min-height: 240px; padding: 12px; border: 2px dashed transparent; border-radius: 8px; background: var(--soft); }
+  .column.target { border-color: var(--accent); }
+  .column h2 { display: flex; justify-content: space-between; margin: 0 0 4px; font-size: 16px; }
+  .card { padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); cursor: grab; }
+  .card p { margin: 0 0 6px; overflow-wrap: anywhere; }
+  .card .actions { display: flex; gap: 4px; }
+  .card .actions button { padding: 0 8px; font-size: 14px; }
+  .card .actions .danger { margin-left: auto; }
+  .column form { margin-top: auto; }
+  .column input { width: 100%; }
+</style>
+<main>
+  <a href="/">← examples</a>
+  <h1>Kanban</h1>
+  <p class="sub">
+    Nested lists with <code>data-key</code>; drag the cards between columns (drag events with <code>.prevent</code> and
+    <code>$event</code>) or use ← →. Each column keeps the draft of its next card in local state (<code>data-state-ui</code>).
+  </p>
+  <div class="board">
+    <section
+      class="column"
+      data-for="c, ci in columns"
+      data-key="c.id"
+      data-state-ui='{"draft": ""}'
+      data-class-target="ci | eq(#target)"
+      data-on-dragover.prevent="#target.set(ci)"
+      data-on-drop.prevent="columns.drop(#dragging, ci) #target.set(null)"
+    >
+      <h2><span data-text="c.title"></span> <small class="muted" data-text="c.cards.length"></small></h2>
+      <article class="card" draggable="true" data-for="k, ki in c.cards" data-key="k.id" data-on-dragstart="#dragging.from(ci, ki, $event)" data-on-dragend="#target.set(null)">
+        <p data-text="k.text"></p>
+        <div class="actions">
+          <button title="Move left" data-attr-disabled="ci | eq(0)" data-click="columns.move(ci, ki, -1)">←</button>
+          <button title="Move right" data-attr-disabled="ci | isLast(columns)" data-click="columns.move(ci, ki, 1)">→</button>
+          <button class="danger" title="Delete" data-click="c.cards.splice(ki, 1)">×</button>
+        </div>
+      </article>
+      <form data-on-submit="c.cards.addCard(ui.draft) ui.draft.set('')">
+        <input placeholder="+ New card" data-value="ui.draft" />
+      </form>
+    </section>
+  </div>
+</main>

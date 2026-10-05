@@ -1,0 +1,63 @@
+<article class="issue" data-context="issue">
+  <p class="crumbs">
+    <a href="/tracker">← Issues</a>
+    <!-- Another issue is the same route: the page stays and gets the state of the other URL. -->
+    <span class="near">
+      <a data-if="near.older" data-attr-href="near.older | issueUrl">‹ older</a>
+      <a data-if="near.newer" data-attr-href="near.newer | issueUrl">newer ›</a>
+    </span>
+  </p>
+  <!-- The title is edited in a draft of its own (issue.#edit, never sent): the issue only changes on Save. -->
+  <header data-state-edit='{"on": false, "title": ""}'>
+    <form data-if="edit.on" data-on-submit=".title.set(edit.title) edit.on.set(false) .patch('/tracker/api/issues/', .id)">
+      <input required maxlength="120" data-component="focus" data-value="edit.title" data-on-keydown.escape="edit.on.set(false)" />
+      <button class="primary">Save</button>
+      <button type="button" data-click="edit.on.set(false)">Cancel</button>
+    </form>
+    <h1 data-else>
+      <span data-text=".title"></span> <small class="muted">#<span data-text=".id"></span></small>
+      <button class="link" data-click="edit.title.set(.title) edit.on.set(true)">Edit</button>
+    </h1>
+  </header>
+  <p>
+    <b class="status" data-attr-data-status=".status" data-text=".status"></b>
+    <span class="muted"><span data-text=".author"></span> opened this on <span data-text=".at | date"></span></span>
+  </p>
+  <p class="error" data-if="#issue.error">Not saved (<span data-text="#issue.error.message"></span>): the server may not have what you see.</p>
+  <div class="columns">
+    <section>
+      <p class="body" data-if=".body" data-text=".body"></p>
+      <p class="muted" data-else>No description.</p>
+      <h2 data-text=".comments.length | plural('comment', 'comments')"></h2>
+      <ol class="comments">
+        <li data-for="c in .comments" data-key="c.id" data-transition="fade">
+          <b data-text="c.author"></b> <small class="muted" data-text="c.at | date"></small>
+          <p data-text="c.body"></p>
+        </li>
+      </ol>
+      <!-- Posts the reply, then gets the issue again (with it) and clears the box: these two wait for the POST and are skipped if it fails. -->
+      <form class="reply" data-on-submit="reply.post('/tracker/api/issues/', issue.id, '/comments') issue.get('/tracker/api/issues/', issue.id) reply.body.set('')">
+        <textarea rows="3" required maxlength="2000" placeholder="Leave a comment" data-value="reply.body"></textarea>
+        <p class="error" data-if="#reply.error">Not sent (<span data-text="#reply.error.message"></span>).</p>
+        <button class="primary" data-attr-disabled="#reply.loading">Comment</button>
+      </form>
+    </section>
+    <aside>
+      <!-- A change shows at once and is then sent; the counts in the layout are asked for again after it. One button
+           for both ways: what follows a request only runs while its element is still in the page. -->
+      <button
+        data-click=".status.flip() .patch('/tracker/api/issues/', .id) counts.get('/tracker/api/counts')"
+        data-text=".status | eq('open') | then('Close issue', 'Reopen issue')"
+      ></button>
+      <label>
+        Assignee
+        <select data-value=".assignee" data-on-change=".patch('/tracker/api/issues/', .id)">
+          <option value="">Nobody</option>
+          <option data-for="p in people" data-text="p"></option>
+        </select>
+      </label>
+      <!-- A change of a box bubbles up to the fieldset. -->
+      <fieldset data-use="labels" data-let-value="issue.labels" data-on-change="issue.patch('/tracker/api/issues/', issue.id)"><legend>Labels</legend></fieldset>
+    </aside>
+  </div>
+</article>

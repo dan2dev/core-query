@@ -1,0 +1,44 @@
+<style>
+  .chat { display: flex; flex-direction: column; height: 70vh; min-height: 360px; border: 1px solid var(--line); border-radius: 8px; }
+  .chat header { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .messages { flex: 1; overflow-y: auto; margin: 0; padding: 12px; list-style: none; }
+  .messages li { position: relative; width: fit-content; max-width: 75%; margin: 0 0 8px; padding: 6px 10px; border-radius: 10px; background: var(--soft); }
+  .messages li.mine { margin-left: auto; background: var(--accent); color: var(--on-accent); }
+  .messages p { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+  .messages small { opacity: 0.7; font-size: 11px; }
+  .delete { position: absolute; top: -8px; left: -8px; display: none; width: 20px; height: 20px; padding: 0; border-radius: 50%; font-size: 12px; line-height: 1; }
+  .messages li:hover .delete { display: block; }
+  .typing { color: var(--muted); font-style: italic; }
+  .chat form { display: flex; gap: 8px; padding: 8px; border-top: 1px solid var(--line); }
+  .chat textarea { flex: 1; resize: none; }
+</style>
+<main>
+  <a href="/">← examples</a>
+  <h1>Chat</h1>
+  <p class="sub">
+    Enter sends (<code>data-on-keydown.enter.prevent</code>), Esc clears, the list is keyed and <code>await app.tick()</code> scrolls to
+    the last message once the DOM is updated. The bot answers asynchronously.
+  </p>
+  <section class="chat">
+    <header><b>#general</b> <span class="muted" data-text="msgs | count"></span></header>
+    <ol class="messages" data-component="chat">
+      <li data-for="m, i in msgs" data-key="m.id" data-class-mine="m.author | eq('me')">
+        <button class="delete" title="Delete" data-if="m.author | eq('me')" data-click="msgs.splice(i, 1)">×</button>
+        <p data-text="m.text"></p>
+        <small data-text="m.at | time"></small>
+      </li>
+      <li class="typing" data-if="typing">bot is typing…</li>
+    </ol>
+    <form data-on-submit="msgs.say(text) text.set('')">
+      <textarea
+        rows="2"
+        placeholder="Message (Enter sends, Esc clears)"
+        autofocus
+        data-value="text"
+        data-on-keydown.enter.prevent="msgs.say(text) text.set('')"
+        data-on-keydown.escape="text.set('')"
+      ></textarea>
+      <button class="primary" data-attr-disabled="text | blank">Send</button>
+    </form>
+  </section>
+</main>

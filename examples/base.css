@@ -1,0 +1,116 @@
+/* Shared look of the examples: a light/dark palette, form controls and buttons. */
+:root,
+[data-theme='light'] {
+  --fg: #1f2328;
+  --muted: #59636e;
+  --bg: #ffffff;
+  --soft: #f6f8fa;
+  --line: #d1d9e0;
+  --accent: #0969da;
+  --on-accent: #ffffff;
+  --danger: #d1242f;
+  --ok: #1a7f37;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fg: #f0f6fc;
+    --muted: #9198a1;
+    --bg: #0d1117;
+    --soft: #151b23;
+    --line: #3d444d;
+    --accent: #4493f8;
+    --on-accent: #0d1117;
+    --danger: #f85149;
+    --ok: #3fb950;
+    color-scheme: dark;
+  }
+}
+[data-theme='dark'] {
+  --fg: #f0f6fc;
+  --muted: #9198a1;
+  --bg: #0d1117;
+  --soft: #151b23;
+  --line: #3d444d;
+  --accent: #4493f8;
+  --on-accent: #0d1117;
+  --danger: #f85149;
+  --ok: #3fb950;
+  color-scheme: dark;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+h1 {
+  margin: 8px 0 4px;
+  font-size: 28px;
+}
+.sub,
+.muted {
+  color: var(--muted);
+}
+.sub {
+  margin: 0 0 24px;
+}
+a {
+  color: var(--accent);
+}
+code {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--soft);
+  font-size: 0.9em;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+button {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--soft);
+  cursor: pointer;
+}
+button.primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+button.danger {
+  color: var(--danger);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+input:not([type='checkbox'], [type='radio'], [type='range']),
+select,
+textarea {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+/* data-show only toggles [hidden]: keep it hidden even where CSS sets a display. */
+[hidden] {
+  display: none !important;
+}

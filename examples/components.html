@@ -1,0 +1,154 @@
+<style>
+  .theme { min-height: 100vh; background: var(--bg); color: var(--fg); }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  section.demo { margin: 24px 0; padding: 16px; border: 1px solid var(--line); border-radius: 8px; }
+  section.demo > h2 { margin: 0 0 12px; font-size: 18px; }
+  [role='tablist'] { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
+  [role='tab'] { margin-bottom: -1px; border-radius: 6px 6px 0 0; border-bottom-color: transparent; background: none; }
+  [role='tab'].active { border-color: var(--line); border-bottom-color: var(--bg); background: var(--bg); font-weight: 600; }
+  [role='tabpanel'] { padding: 12px 0 0; }
+  dialog { padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); }
+  dialog::backdrop { background: rgb(0 0 0 / 0.4); }
+  dialog form { padding: 16px 20px; }
+  .buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+  .about { margin: 0 0 12px; color: var(--muted); }
+  .shopping { display: grid; gap: 8px; padding-left: 20px; }
+  .shopping li { padding-left: 4px; }
+  .note { padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--soft); }
+  .toasts { position: fixed; right: 16px; bottom: 16px; display: grid; gap: 8px; }
+  .toast { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-left: 4px solid var(--ok); border-radius: 6px; background: var(--soft); box-shadow: 0 4px 12px rgb(0 0 0 / 0.15); transition: opacity 0.2s, translate 0.2s; }
+  .toast.error { border-left-color: var(--danger); }
+  .toast button { padding: 0 6px; border: 0; background: none; }
+  /* data-transition="toast": where a toast enters from and leaves to. */
+  .toast-enter, .toast-leave { opacity: 0; translate: 0 8px; }
+  details { padding: 8px 0; border-bottom: 1px solid var(--line); }
+  summary { cursor: pointer; font-weight: 600; }
+  [popover] { padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); }
+  .volume { display: flex; align-items: center; gap: 12px; }
+  progress { flex: 1; }
+</style>
+<div class="theme" data-attr-data-theme="theme">
+  <main>
+    <a href="/">← examples</a>
+    <div class="top">
+      <h1>Components</h1>
+      <button data-click="theme.toggle()">Theme: <span data-text="theme | or('system')"></span></button>
+    </div>
+    <p class="sub">
+      Small interactive examples of state, conditions, lists and native components. Change the controls and watch what happens: the
+      <code>data-*</code> attributes connect the HTML to the state, with no element to select by hand.
+    </p>
+
+    <section class="demo">
+      <h2>1. Tabs: the state picks the content</h2>
+      <p class="about">
+        Click a tab. <code>data-click</code> updates <code>tab</code>; <code>data-if</code> and <code>data-else-if</code> pick which
+        panel to render. Edit the name or change the notifications option to see fields bound to the state.
+      </p>
+      <div role="tablist">
+        <button role="tab" data-for="t in tabs" data-class-active="t.id | eq(tab)" data-attr-aria-selected="t.id | eq(tab) | then('true', 'false')" data-click="tab.set(t.id)" data-text="t.title"></button>
+      </div>
+      <div role="tabpanel" data-if="tab | eq('profile')">
+        <p>Hello, <b data-text="profile.name"></b>! Edit your name: <input data-value="profile.name" /></p>
+      </div>
+      <div role="tabpanel" data-else-if="tab | eq('notifications')">
+        <label><input type="checkbox" data-value="profile.notify" /> Get notified by email</label>
+        <p class="muted" data-if="profile.notify">You will get notifications.</p>
+      </div>
+      <div role="tabpanel" data-else>
+        <p>The content of a closed tab is unmounted; its state stays in the tree.</p>
+      </div>
+    </section>
+
+    <section class="demo">
+      <h2>2. Conditions: remove or just hide</h2>
+      <p class="about">
+        Check and uncheck the box. <code>data-if</code> mounts or unmounts the paragraph; <code>data-show</code> keeps the element in
+        the DOM and toggles its <code>hidden</code> attribute. Use <code>data-if</code> for conditional content and
+        <code>data-show</code> when you only want to control visibility.
+      </p>
+      <label><input type="checkbox" data-value="showBoth" /> Show both examples</label>
+      <p class="note" data-if="showBoth">This text is in the DOM only while the box is checked.</p>
+      <p class="note" data-show="showBoth">This text stays in the DOM, but is hidden when the box is unchecked.</p>
+    </section>
+
+    <section class="demo">
+      <h2>3. List: add, count and remove items</h2>
+      <p class="about">
+        Submit the form to add an item. <code>data-for</code> repeats an element for each item, <code>data-text</code> shows its
+        text, and <code>item.delete()</code> removes the row clicked. The count follows the list.
+      </p>
+      <form class="buttons" data-on-submit="shopping.addItem(newItem) newItem.set('')">
+        <label>
+          <span>Something to buy</span>
+          <input required data-value="newItem" placeholder="e.g. coffee" />
+        </label>
+        <button class="primary">Add</button>
+      </form>
+      <p><b data-text="shopping.length"></b> <span data-text="shopping.length | eq(1) | then('item', 'items')"></span></p>
+      <p class="muted" data-if="!shopping.length">The list is empty. Add your first item above.</p>
+      <ul class="shopping">
+        <li data-for="item in shopping" data-key="item.id">
+          <span data-text="item.text"></span>
+          <button type="button" title="Remove the item" data-click="item.delete()">Remove</button>
+        </li>
+      </ul>
+    </section>
+
+    <section class="demo">
+      <h2>4. Modal, notifications and a native popover</h2>
+      <p class="about">
+        The <code>modal</code> state opens or closes the <code>&lt;dialog&gt;</code>; the notifications leave after three seconds or
+        on a click on ×, animated by <code>data-transition</code>. The popover uses the browser's API and needs no JavaScript.
+      </p>
+      <div class="buttons">
+        <button class="primary" data-click="modal.set(true)">Open the modal</button>
+        <button data-click="toasts.notify('Saved.')">Notify a success</button>
+        <button data-click="toasts.notify('Something went wrong.', 'error')">Notify an error</button>
+        <button popovertarget="tip">Tip (native popover)</button>
+      </div>
+      <div id="tip" popover>A popover without a line of JS: a click outside or Esc closes it.</div>
+      <dialog data-component="dialog" data-value="modal" data-on-close="modal.set(false)" data-click="modal.backdrop($event)">
+        <form method="dialog">
+          <h2>Delete the project?</h2>
+          <p>Esc, "Cancel" or a click outside close it.</p>
+          <div class="buttons">
+            <button>Cancel</button>
+            <button type="button" class="primary" data-click="modal.set(false) toasts.notify('Project deleted.')">Delete</button>
+          </div>
+        </form>
+      </dialog>
+    </section>
+
+    <section class="demo">
+      <h2>5. Accordion: native HTML</h2>
+      <p class="about">
+        Open a question to read its answer. <code>&lt;details name="faq"&gt;</code> keeps a single answer open at a time, with no
+        interaction code.
+      </p>
+      <details name="faq" data-for="f in faq">
+        <summary data-text="f.question"></summary>
+        <p data-text="f.answer"></p>
+      </details>
+    </section>
+
+    <section class="demo">
+      <h2>6. Range and progress: one value, three views</h2>
+      <p class="about">
+        Drag the control. <code>data-value</code> writes the value, <code>data-attr-value</code> updates the progress bar and
+        <code>data-text</code> shows the number.
+      </p>
+      <div class="volume">
+        <input type="range" min="0" max="100" data-value="volume" />
+        <progress max="100" data-attr-value="volume"></progress>
+        <b data-text="volume"></b>
+      </div>
+    </section>
+  </main>
+  <div class="toasts" aria-live="polite" data-component="toasts">
+    <div class="toast" data-for="t in toasts" data-key="t.id" data-transition="toast" data-class-error="t.kind | eq('error')">
+      <span data-text="t.text"></span>
+      <button title="Close" data-click="t.delete()">×</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+<style>
+  /* The look of 2017, light whatever the system's: not the one of the other examples. */
+  body { font: 18px/1.4 Arial, Helvetica, sans-serif; color: #555; background: #fff; color-scheme: light; margin: 0; }
+  .app { max-width: 500px; margin: 20px auto; padding: 0 16px; }
+  h1 { font-size: 36px; text-align: center; color: #007acc; }
+  form { display: flex; gap: 5px; margin-bottom: 10px; }
+  input[type='text'] { flex: 1; height: 40px; padding: 0 8px; font: inherit; border: 1px solid #ddd; border-radius: 0; background: #fff; }
+  button { border: 0; border-radius: 0; background: #007acc; color: #fff; font-weight: bold; cursor: pointer; padding: 0 16px; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding: 10px; box-shadow: 2px 1px 10px #eee; }
+  li span { flex: 1; overflow-wrap: anywhere; }
+  li button { padding: 2px 8px; font-size: 12px; }
+  li:has(:checked) span { text-decoration: line-through; opacity: 0.6; }
+</style>
+<div class="app">
+  <a href="/">← examples</a>
+  <h1>To Do List CoreQuery</h1>
+  <!-- Each change posts the list to the server (ssr.mjs), so a reload shows the latest one. -->
+  <form data-on-submit="list.push(draft) draft.title.set('') list.post('/list')">
+    <input type="text" placeholder="What needs doing?" data-value="draft.title" required />
+    <button>ADD</button>
+  </form>
+  <p data-show="!list.length">Nothing to do.</p>
+  <ul>
+    <li data-for="item in list">
+      <input type="checkbox" data-value="item.done" data-on-change="list.post('/list')" />
+      <span data-text="item.title"></span>
+      <button type="button" data-click=".delete() list.post('/list')">x</button>
+    </li>
+  </ul>
+</div>

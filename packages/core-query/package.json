@@ -1,0 +1,66 @@
+{
+  "name": "core-query",
+  "version": "0.1.0",
+  "description": "Tiny HTML-first reactive templates over a TreeModel, with SSR and hydration.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dan2dev/core-query.git",
+    "directory": "packages/core-query"
+  },
+  "homepage": "https://github.com/dan2dev/core-query/tree/master/packages/core-query#readme",
+  "bugs": "https://github.com/dan2dev/core-query/issues",
+  "type": "module",
+  "sideEffects": [
+    "./dist/core-query.global.js"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    },
+    "./global": "./dist/core-query.global.js",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "server": [
+        "./dist/server.d.ts"
+      ]
+    }
+  },
+  "unpkg": "./dist/core-query.global.js",
+  "jsdelivr": "./dist/core-query.global.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage --coverage.include='src/**'",
+    "typecheck": "tsc",
+    "size": "tsup --silent && node -e \"const b=require('zlib').gzipSync(require('fs').readFileSync('dist/core-query.global.js')).length;console.log('core-query.global.js: '+b+' B gzip');if(b>10240)process.exit(1)\"",
+    "prepack": "tsup",
+    "build:watch": "tsup --watch"
+  },
+  "keywords": [
+    "reactive",
+    "templates",
+    "ssr",
+    "hydration",
+    "data-binding"
+  ],
+  "devDependencies": {
+    "@vitest/coverage-v8": "5.0.3",
+    "happy-dom": "^20.14.5",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  }
+}

@@ -1,0 +1,166 @@
+<style>
+  main { max-width: 1080px; }
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 16px; }
+  .toolbar .right { margin-left: auto; }
+  .layout { display: grid; grid-template-columns: 250px 1fr; gap: 24px; align-items: start; }
+  .invoices { display: grid; gap: 8px; margin: 0 0 12px; padding: 0; list-style: none; }
+  .pick { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; width: 100%; padding: 8px 12px; background: none; text-align: left; }
+  .active .pick { border-color: var(--accent); box-shadow: inset 3px 0 var(--accent); background: var(--soft); }
+  .pick .client { grid-column: 1 / -1; overflow: hidden; color: var(--muted); font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+  .badge { align-self: center; padding: 0 8px; border: 1px solid currentColor; border-radius: 99px; color: var(--muted); font-size: 12px; text-transform: capitalize; }
+  .badge[data-status='paid'] { color: var(--ok); }
+  .badge[data-status='overdue'] { color: var(--danger); }
+  aside .primary { width: 100%; }
+
+  .sheet { display: grid; gap: 16px; padding: 20px; border: 1px solid var(--line); border-radius: 8px; }
+  .sheet header { display: grid; grid-template-columns: 1.4fr 1fr 1fr auto; gap: 12px; align-items: end; }
+  .sheet label { display: grid; gap: 4px; color: var(--muted); font-size: 14px; }
+  .sheet input, .sheet textarea { width: 100%; color: var(--fg); }
+  .sheet .paid { display: flex; align-items: center; gap: 6px; padding-bottom: 8px; color: var(--fg); font-size: 16px; }
+  .paid input { width: auto; }
+  .warn { margin: 0; color: var(--danger); font-size: 14px; }
+  .sheet fieldset { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: 6px; }
+  .sheet legend { padding: 0 4px; font-weight: 600; }
+  .sheet .wide { grid-column: 1 / -1; }
+  .items { width: 100%; border-collapse: collapse; }
+  .items th { padding: 4px 6px; color: var(--muted); font-size: 14px; font-weight: 600; text-align: left; }
+  .items td { padding: 4px 6px; border-top: 1px solid var(--line); }
+  .items tfoot td, .items tfoot th { border-top: 0; }
+  .items tfoot tr:first-child td { border-top: 1px solid var(--line); }
+  .items .number { width: 96px; }
+  .items .number input { text-align: right; }
+  .amount { width: 120px; font-variant-numeric: tabular-nums; text-align: right !important; white-space: nowrap; }
+  .row-actions { width: 1%; white-space: nowrap; }
+  .row-actions button { padding: 2px 8px; }
+  .items tfoot th { text-align: right; }
+  .items tfoot label { display: inline-flex; align-items: center; gap: 6px; }
+  .items tfoot input { width: 72px; text-align: right; }
+  .total th, .total td { padding-top: 8px; color: var(--fg); font-size: 18px; font-weight: 700; }
+  .empty { padding: 24px; color: var(--muted); text-align: center; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .actions .danger { margin-left: auto; }
+  @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } .sheet header { grid-template-columns: 1fr 1fr; } }
+  /* Printed, only the invoice is left, and its fields read as plain text. */
+  @media print {
+    main > a, h1, .sub, .toolbar, aside, .row-actions, .actions, .add, .warn { display: none !important; }
+    .layout { display: block; }
+    .sheet { padding: 0; border: 0; }
+    .sheet input, .sheet textarea { padding-left: 0 !important; border-color: transparent !important; resize: none; }
+  }
+</style>
+<main data-component="invoices">
+  <a href="/">← examples</a>
+  <h1>Invoices</h1>
+  <p class="sub">
+    A document editor over nested state: the invoice picked on the left is the list item whose id is <code>current</code>, its lines
+    are a keyed list (moving one keeps what is being typed in it), every amount is a template function of the data, and each burst
+    of changes is one step of an undo history kept by <code>app.on()</code> and saved in this browser (Ctrl/⌘ Z, with Shift to redo).
+  </p>
+
+  <div class="toolbar">
+    <!-- undo and redo return the invoices of the step they land on, and an action stores what its function returns. -->
+    <button title="Undo (Ctrl/⌘ Z)" data-attr-disabled="!#history.undo" data-click="invoices.undo()">↶ Undo</button>
+    <button title="Redo (Shift Ctrl/⌘ Z)" data-attr-disabled="!#history.redo" data-click="invoices.redo()">↷ Redo</button>
+    <label>
+      Currency
+      <select data-value="currency">
+        <option data-for="c in currencies" data-text="c"></option>
+      </select>
+    </label>
+    <span>Outstanding: <b data-text="invoices | outstanding | money(currency)"></b></span>
+    <button class="right" data-click="invoices.sample() current.firstOf(invoices)">Reset the sample</button>
+  </div>
+
+  <div class="layout">
+    <aside>
+      <ul class="invoices">
+        <li data-for="inv in invoices" data-key="inv.id" data-class-active="inv.id | eq(current)">
+          <button class="pick" data-click="current.set(inv.id)">
+            <b data-text="inv.number | or('No number')"></b>
+            <span class="badge" data-attr-data-status="inv | status" data-text="inv | status"></span>
+            <span class="client" data-text="inv.client.name | or('No client yet')"></span>
+            <span data-text="inv | total | money(currency)"></span>
+          </button>
+        </li>
+      </ul>
+      <button class="primary" data-click="invoices.newInvoice() current.latest(invoices)">New invoice</button>
+    </aside>
+
+    <!-- The editor is the item of the list that is picked: inside it, "inv" is that invoice wherever it sits in the array. -->
+    <section class="sheet" data-for="inv in invoices" data-key="inv.id" data-if="inv.id | eq(current)">
+      <header>
+        <label>Invoice <input data-value="inv.number" /></label>
+        <label>Date <input type="date" data-value="inv.date" /></label>
+        <label>Due <input type="date" data-value="inv.due" /></label>
+        <label class="paid"><input type="checkbox" data-value="inv.paid" /> Paid</label>
+      </header>
+      <p class="warn" data-if="inv | lateDue">The due date is before the invoice's date.</p>
+      <fieldset data-context="inv.client">
+        <legend>Bill to</legend>
+        <label>Name <input data-value=".name" /></label>
+        <label>Email <input type="email" data-value=".email" /></label>
+        <label class="wide">Address <textarea rows="2" data-value=".address"></textarea></label>
+      </fieldset>
+      <table class="items">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th class="amount">Amount</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-for="it, i in inv.items" data-key="it.id">
+            <td><input placeholder="What was done" data-value="it.description" /></td>
+            <td class="number"><input type="number" min="0" step="any" data-value="it.qty" /></td>
+            <td class="number"><input type="number" min="0" step="0.01" data-value="it.price" /></td>
+            <td class="amount" data-text="it | amount | money(currency)"></td>
+            <td class="row-actions">
+              <button title="Move up" data-attr-disabled="i | eq(0)" data-click="inv.items.moveItem(i, -1)">↑</button>
+              <button title="Move down" data-attr-disabled="i | isLast(inv.items)" data-click="inv.items.moveItem(i, 1)">↓</button>
+              <button title="Duplicate" data-click="inv.items.copyItem(i)">⧉</button>
+              <button class="danger" title="Remove" data-click="inv.items.splice(i, 1)">×</button>
+            </td>
+          </tr>
+          <tr data-if="!inv.items.length">
+            <td class="empty" colspan="5">No lines yet.</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="5"><button class="add" data-click="inv.items.addItem()">+ Add a line</button></td>
+          </tr>
+          <tr>
+            <th colspan="3">Subtotal</th>
+            <td class="amount" data-text="inv | subtotal | money(currency)"></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th colspan="3"><label>Discount <input type="number" min="0" max="100" step="any" data-value="inv.discount" /> %</label></th>
+            <td class="amount">−<span data-text="inv | discount | money(currency)"></span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th colspan="3"><label>Tax <input type="number" min="0" max="100" step="any" data-value="inv.tax" /> %</label></th>
+            <td class="amount" data-text="inv | tax | money(currency)"></td>
+            <td></td>
+          </tr>
+          <tr class="total">
+            <th colspan="3">Total</th>
+            <td class="amount" data-text="inv | total | money(currency)"></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+      <label>Notes <textarea rows="2" data-value="inv.notes"></textarea></label>
+      <div class="actions">
+        <button class="primary" data-click=".print()">Print / save as PDF</button>
+        <button data-click="invoices.copyInvoice(inv.id) current.latest(invoices)">Duplicate</button>
+        <button class="danger" data-click="invoices.without(inv.id) current.firstOf(invoices)">Delete</button>
+      </div>
+    </section>
+    <p class="empty" data-if="invoices | none(current)">No invoice here: pick one, or create it.</p>
+  </div>
+</main>

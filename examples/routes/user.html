@@ -1,0 +1,7 @@
+<template data-if="user">
+  <h1 data-text="user.name"></h1>
+  <p>User no. <b data-text="route.params.id"></b> · tab <b data-text="route.query.tab"></b></p>
+  <p><label>Rename (in this browser only): <input data-value="user.name" /></label></p>
+  <p><a href="?tab=profile">profile</a> · <a href="?tab=orders">orders</a> · <a href="/routes">back</a></p>
+</template>
+<h1 data-else>Unknown user</h1>

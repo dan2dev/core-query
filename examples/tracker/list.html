@@ -1,0 +1,30 @@
+<!-- Every filter is in the URL (?status=closed&label=bug&q=router&page=2), and the server answers the list for it.
+     They all lead to this same route, so the page stays in place and only its state changes. -->
+<div class="tools">
+  <nav class="tabs">
+    <a data-attr-href="route.query | to('status', '')" data-class-active="filters.status | eq('open')">Open <b data-text="counts.open"></b></a>
+    <a data-attr-href="route.query | to('status', 'closed')" data-class-active="filters.status | eq('closed')">Closed <b data-text="counts.closed"></b></a>
+    <a data-attr-href="route.query | to('status', 'all')" data-class-active="filters.status | eq('all')">All</a>
+  </nav>
+  <!-- Each key replaces the URL; an answer that arrives after a newer key is dropped, and the box keeps its focus. -->
+  <input type="search" placeholder="Search the issues…" data-value="filters.q" data-on-input="filters.q.filter(route.query, 'q')" />
+  <select title="Label" data-value="filters.label" data-on-change="filters.label.filter(route.query, 'label')">
+    <option value="">Any label</option>
+    <option data-for="l in labels" data-text="l"></option>
+  </select>
+</div>
+<p class="muted" data-text="total | plural('issue', 'issues')"></p>
+<ul class="issues">
+  <li data-for="i in issues" data-key="i.id" data-transition="fade" data-class-closed="i.status | eq('closed')">
+    <a class="title" data-attr-href="i.id | issueUrl" data-text="i.title"></a>
+    <span class="label" data-for="l in i.labels" data-attr-data-label="l" data-text="l"></span>
+    <small class="muted">
+      #<span data-text="i.id"></span> opened <span data-text="i.at | date"></span> by <span data-text="i.author"></span> ·
+      <span data-text="i.comments | plural('comment', 'comments')"></span>
+    </small>
+  </li>
+</ul>
+<p class="empty" data-if="!issues.length">Nothing matches. <a href="/tracker">Clear the filters</a></p>
+<nav class="pager" data-if="pager.length | gt(1)">
+  <a data-for="p in pager" data-attr-href="route.query | to('page', p)" data-class-active="p | eq(filters.page)" data-text="p"></a>
+</nav>

@@ -1,0 +1,104 @@
+<style>
+  main.shop { max-width: 1080px; }
+  .top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .columns { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+  .categories { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .categories .active { border-color: var(--accent); color: var(--accent); }
+  .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+  .product { display: flex; flex-direction: column; gap: 4px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; }
+  .product h3 { margin: 4px 0 0; font-size: 16px; }
+  .product p { margin: 0; }
+  .product button { margin-top: auto; }
+  .photo { position: relative; height: 110px; border-radius: 6px; background: var(--color); }
+  .badge { position: absolute; top: 8px; left: 8px; padding: 2px 8px; border-radius: 99px; background: #fff; color: #cf222e; font-size: 12px; font-weight: 600; }
+  .price s { color: var(--muted); font-size: 14px; }
+  .cart { position: sticky; top: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 8px; }
+  .cart h2 { margin: 0 0 8px; font-size: 20px; }
+  .lines { margin: 0 0 12px; padding: 0; list-style: none; }
+  .lines li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 4px 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .lines .name { grid-column: 1 / -1; }
+  .qty { display: flex; gap: 4px; }
+  .qty input { width: 56px; text-align: center; }
+  .qty button, .remove { padding: 2px 10px; }
+  .remove { border: 0; background: none; color: var(--danger); font-size: 18px; }
+  .coupon { display: flex; align-items: center; gap: 8px; }
+  .coupon input { flex: 1; }
+  .totals { display: grid; grid-template-columns: 1fr auto; gap: 4px; }
+  .totals dd { margin: 0; text-align: right; }
+  .totals .total { padding-top: 4px; border-top: 1px solid var(--line); font-weight: 700; }
+  .shipping { height: 6px; margin-top: 12px; border-radius: 3px; background: var(--soft); }
+  .shipping div { height: 100%; border-radius: 3px; background: var(--ok); transition: width 0.3s; }
+  .checkout { width: 100%; }
+  .order { padding: 8px 12px; border-radius: 6px; background: var(--soft); color: var(--ok); }
+  @media (max-width: 760px) { .columns { grid-template-columns: 1fr; } .cart { position: static; } }
+</style>
+<main class="shop">
+  <a href="/">← examples</a>
+  <header class="top">
+    <h1>Shop</h1>
+    <a href="#cart">Cart (<span data-text="cart | count"></span>)</a>
+  </header>
+  <p class="sub">
+    Each product is a <code>&lt;template id="card"&gt;</code> with slots, used through <code>data-use</code>; the cart works out
+    quantities, a coupon (<code>WELCOME10</code>) and free shipping over $200 with template functions. The cart is
+    saved on the server, which renders the page with it.
+  </p>
+  <div class="columns">
+    <section>
+      <nav class="categories">
+        <button data-for="c in categories" data-class-active="c | eq(category)" data-click="category.set(c)" data-text="c"></button>
+      </nav>
+      <div class="products">
+        <article class="product" data-for="p in products" data-key="p.id" data-if="p | inCategory(category)" data-use="card" data-context="p">
+          <span slot="badge" class="badge" data-if=".sale">Sale</span>
+          <button slot="action" class="primary" data-attr-disabled="!.stock" data-click="cart.addToCart(p)">
+            <span data-if=".stock">Add to cart</span><span data-else>Sold out</span>
+          </button>
+        </article>
+      </div>
+    </section>
+    <aside id="cart" class="cart" data-component="cart">
+      <h2>Cart</h2>
+      <p class="muted" data-if="!cart.length">Your cart is empty.</p>
+      <template data-else>
+        <ul class="lines">
+          <li data-for="l, i in cart" data-key="l.id">
+            <span class="name" data-text="l.name"></span>
+            <span class="qty">
+              <button title="Less" data-attr-disabled="l.qty | eq(1)" data-click="l.qty.less()">−</button>
+              <input type="number" min="1" data-attr-max="l.stock" data-value="l.qty" />
+              <button title="More" data-attr-disabled="l.qty | eq(l.stock)" data-click="l.qty.more(l.stock)">+</button>
+            </span>
+            <b data-text="l.price | times(l.qty) | money"></b>
+            <button class="remove" title="Remove" data-click="cart.splice(i, 1)">×</button>
+          </li>
+        </ul>
+        <label class="coupon">Coupon <input placeholder="WELCOME10" data-value="coupon" /></label>
+        <dl class="totals">
+          <dt>Subtotal</dt>
+          <dd data-text="cart | subtotal | money"></dd>
+          <dt data-if="coupon | discount">Discount</dt>
+          <dd data-if="coupon | discount" data-text="cart | discountAmount(coupon) | money"></dd>
+          <dt>Shipping</dt>
+          <dd data-text="cart | shipping | money"></dd>
+          <dt class="total">Total</dt>
+          <dd class="total" data-text="cart | total(coupon) | money"></dd>
+        </dl>
+        <div class="shipping" title="On the way to free shipping"><div data-style-width="cart | shippingProgress"></div></div>
+        <p class="muted" data-text="cart | shippingHint"></p>
+        <button class="primary checkout" data-click="order.checkout(cart, coupon) cart.splice(0) coupon.set('')">Check out</button>
+      </template>
+      <p class="order" data-if="order">
+        Order <b data-text="order.number"></b> confirmed: <span data-text="order.items"></span> item(s),
+        <span data-text="order.total | money"></span>.
+      </p>
+    </aside>
+  </div>
+</main>
+<template id="card">
+  <div class="photo" data-style---color=".color"><slot name="badge"></slot></div>
+  <h3 data-text=".name"></h3>
+  <p class="price"><s data-if=".oldPrice" data-text=".oldPrice | money"></s> <b data-text=".price | money"></b></p>
+  <p class="muted" data-text=".stock | stock"></p>
+  <slot name="action"></slot>
+</template>
